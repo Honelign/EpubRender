@@ -36,8 +36,8 @@ class _EpubViewState extends State<EpubView> {
           },
         ),
       )
-      ..loadRequest(Uri.parse(
-          'https://epub-react.vercel.app/?vercelToolbarCode=Ac0c1eAdbQ_ryK3/${widget.url}'))
+      ..loadRequest(
+          Uri.parse('https://epub-viewer-next.vercel.app?url=${widget.url}'))
       ..setJavaScriptMode(JavaScriptMode.unrestricted);
   }
 

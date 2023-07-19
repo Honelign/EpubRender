@@ -1,39 +1,116 @@
-<!--
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+# epub_view
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/guides/libraries/writing-package-pages).
+Pure flutter widget (non native) for view EPUB documents on all platforms. Based on [epub](https://pub.dev/packages/epub) package. Render with flutter widgets (not native view) on any platforms: **Web**, **MacOs**, **Windows** **Linux**, **Android** and **iOS**
 
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-library-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/developing-packages).
--->
+## Showcase
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+<img width="50%" src="https://raw.githubusercontent.com/ScerIO/packages.flutter/main/packages/epub_view/example/media/example.gif?raw=true" />
 
-## Features
-
-TODO: List what your package can do. Maybe include images, gifs, or videos.
-
-## Getting started
-
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
-
-## Usage
-
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
-
-```dart
-const like = 'sample';
+## Getting Started
+In your flutter project add the dependency:
+```shell
+flutter pub add epubrender
 ```
 
-## Additional information
+## Usage example:
+```dart
+import 'dart:typed_data';
 
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.
+import 'package:flutter/material.dart';
+import 'package:flutter_epub/flutter_epub.dart';
+
+late EpubController _epubController;
+
+@override
+void initState() {
+  super.initState();
+  _epubController = EpubController(
+    // Load document
+    document: EpubDocument.openAsset('assets/book.epub'),
+    // Set start point
+    epubCfi: 'epubcfi(/6/6[chapter-2]!/4/2/1612)',
+  );
+}
+
+@override
+Widget build(BuildContext context) => Scaffold(
+  
+  // Show epub document
+  body: EpubView(
+      url:'example.com/file.epub'
+      )
+);
+```
+
+### How start from last view position?
+This method allows you to keep the exact reading position even inside the chapter:
+```dart
+_epubController = EpubController(
+  // initialize with epub cfi string for open book from last position
+  epubCfi: 'epubcfi(/6/6[chapter-2]!/4/2/1612)',
+);
+
+// Attach controller
+EpubView(
+  controller: _epubController,
+);
+
+// Get epub cfi string
+// for example output - epubcfi(/6/6[chapter-2]!/4/2/1612)
+final cfi = _epubController.generateEpubCfi();
+
+// or usage controller for navigate
+_epubController.gotoEpubCfi('epubcfi(/6/6[chapter-2]!/4/2/1612)');
+```
+
+## Api
+
+### Open document
+
+**Local document open:**
+```dart
+EpubDocument.openAsset('assets/sample.pdf')
+
+EpubDocument.openData(FutureOr<Uint8List> data)
+
+// Not supports on Web
+EpubDocument.openFile('path/to/file/on/device')
+```
+**Network document open:**
+
+Install [[network_file]](https://pub.dev/packages/internet_file) package (supports all platforms):
+```shell
+flutter pub add internet_file
+```
+
+And use it
+```dart
+import 'package:internet_file/internet_file.dart';
+
+// The cors policy is required on the server. 
+// You can raise your cors proxy.
+EpubDocument.openData(InternetFile.get('https://link.to/book.epub'))
+```
+
+### Control document
+```dart
+// Get epub cfi string of actual view insets
+// for example output - epubcfi(/6/6[chapter-2]!/4/2/1612)
+final cfi = _epubController.generateEpubCfi();
+
+// Navigate to paragraph in document
+_epubController.gotoEpubCfi('epubcfi(/6/6[chapter-2]!/4/2/1612)');
+```
+
+### Document callbacks
+```dart
+EpubView(
+  controller: epubController,
+  
+  onExternalLinkPressed: (href) {},
+
+  onDocumentLoaded: (document) {},
+  onChapterChanged: (chapter) {},
+  onDocumentError: (error) {},
+);
+```
